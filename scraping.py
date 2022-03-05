@@ -22,6 +22,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "hemispheres": hemisphere(browser),
         "last_modified": dt.datetime.now()
     }
 
@@ -51,7 +52,7 @@ def mars_news(browser):
 
         # Use the parent element to find the first `a` tag and save it as `news_title`
         news_title = slide_elem.find('div', class_='content_title').get_text()
-        print(news_title)
+        #print(news_title)
 
         #  The article summary (teaser):
         # Use the parent element to find the paragraph text
@@ -112,6 +113,51 @@ def mars_facts():
     # Convert our DataFrame back into HTML-ready code using the .to_html() function:
     return df.to_html(classes="table table-striped")
 
+
+######## Challenge #######
+def hemisphere(browser):
+    url='https://marshemispheres.com/'
+    browser.visit(url)
+
+    # Set up the HTML parser:    
+    image_html = browser.html
+    image_soup = soup(image_html, 'html.parser')
+
+# Retrieve all items for hemispheres information:
+    picture_results = image_soup.find_all( 'div', class_='item')
+
+# 2. Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+# Create loop to scrape through all hemisphere information
+    for hemis in picture_results:
+        hemisphere = {}
+        titles = hemis.find('h3').text
+    
+    # create link for full image
+        link_ref = hemis.find('a', class_='itemLink product-item')['href']
+    
+    # Use the base URL to create an absolute URL and browser visit
+        browser.visit(url + link_ref)
+    
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    # Set up the HTML parser:    
+        images_html = browser.html
+        images_soup = soup(images_html, 'html.parser')
+    
+        img_url = images_soup.find('img', class_='wide-image')['src']
+    
+        #print(titles)
+        #print(img_url)
+    # append list
+        hemisphere['img_url'] = f'https://marshemispheres.com/{img_url}'
+        hemisphere['titles'] = titles
+        hemisphere_image_urls.append(hemisphere)
+        # Go Back
+        browser.back()
+    return hemisphere_image_urls
+
+######## End #########
 if __name__ == "__main__":
     # If running as script, print scraped data
     print(scrape_all())
